@@ -1,0 +1,122 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>Food Items & Pricing Management</h1>
+        <p>Add, update pricing, edit information, and delete food items.</p>
+    </div>
+    <a href="{% url 'dashboard_item_add' %}" class="btn-admin btn-admin-primary"><i class="fa fa-plus"></i> Add New Food Item</a>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="admin-card" style="padding: var(--space-md) var(--space-lg);">
+    <form method="GET" action="" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <div style="flex: 1; min-width: 200px;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by food name or description..." class="form-input" style="background: rgba(255,255,255,0.05); color: #fff; border-color: var(--admin-border);">
+        </div>
+        <div>
+            <select name="category" class="form-input select-input" style="background: #1f2937; color: #fff; border-color: var(--admin-border);">
+                <option value="">-- All Categories --</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <select name="stock" class="form-input select-input" style="background: #1f2937; color: #fff; border-color: var(--admin-border);">
+                <option value="">-- All Stock Status --</option>
+                <option value="available" {% if selected_stock == 'available' %}selected{% endif %}>Available / In Stock</option>
+                <option value="low" {% if selected_stock == 'low' %}selected{% endif %}>Low Stock (&le; 10)</option>
+                <option value="out" {% if selected_stock == 'out' %}selected{% endif %}>Out of Stock</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-admin btn-admin-primary"><i class="fa fa-filter"></i> Filter</button>
+        {% if query or selected_category or selected_stock %}
+            <a href="{% url 'dashboard_item_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Items Table -->
+<div class="admin-card">
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Discount</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 48px; height: 48px; object-fit: cover; border-radius: var(--radius-md);">
+                            {% else %}
+                                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.05); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--admin-text-muted);">
+                                    <i class="fa fa-utensils"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <strong style="display: block; color: #ffffff;">{{ item.name }}</strong>
+                                <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Slug: {{ item.slug }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ item.category.name|default:"Uncategorized" }}</td>
+                    <td>
+                        <strong>₹{{ item.price }}</strong>
+                    </td>
+                    <td>
+                        {% if item.has_discount %}
+                            <span class="status-pill delivered" style="font-size: 0.75rem;">₹{{ item.discount_price }} ({{ item.discount_percent }}% OFF)</span>
+                        {% else %}
+                            <span style="color: var(--admin-text-muted); font-size: 0.85rem;">None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.stock == 0 %}
+                            <span class="status-pill outofstock">0 (Out)</span>
+                        {% elif item.stock <= 10 %}
+                            <span class="status-pill lowstock">{{ item.stock }} units</span>
+                        {% else %}
+                            <span class="status-pill instock">{{ item.stock }} units</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'dashboard_toggle_availability' item.pk %}" class="btn-toggle-availability" style="text-decoration: none;">
+                            {% if item.is_available %}
+                                <span class="status-pill instock">Available</span>
+                            {% else %}
+                                <span class="status-pill outofstock">Unavailable</span>
+                            {% endif %}
+                        </a>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.4rem;">
+                            <a href="{% url 'dashboard_item_edit' item.pk %}" class="btn-admin btn-admin-edit" title="Edit Item & Pricing"><i class="fa fa-edit"></i> Edit</a>
+                            <button type="button" class="btn-admin btn-admin-danger trigger-delete-modal" data-delete-url="{% url 'dashboard_item_delete' item.pk %}" data-item-name="{{ item.name }}" title="Delete Item"><i class="fa fa-trash"></i> Delete</button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">
+                        No food items found matching your filters. <a href="{% url 'dashboard_item_add' %}" style="color: var(--admin-primary);">Click here to add one.</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock dashboard_content %}

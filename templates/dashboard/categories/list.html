@@ -1,0 +1,97 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>Category Management</h1>
+        <p>Organize food catalog into categories.</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl);">
+    <!-- Add Category Form Card -->
+    <div class="admin-card">
+        <h3 style="margin-top: 0; color: var(--admin-primary); margin-bottom: 1.25rem;"><i class="fa fa-plus-circle"></i> Add New Category</h3>
+        <form method="POST" action="" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #fff;">Category Name *</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <span style="color: #f87171; font-size: 0.85rem;">{{ form.name.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #fff;">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <span style="color: #f87171; font-size: 0.85rem;">{{ form.description.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #fff;">Category Image</label>
+                {{ form.image }}
+                {% if form.image.errors %}
+                    <span style="color: #f87171; font-size: 0.85rem;">{{ form.image.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn-admin btn-admin-primary" style="width: 100%; justify-content: center;"><i class="fa fa-save"></i> Save Category</button>
+        </form>
+    </div>
+
+    <!-- Category List Table Card -->
+    <div class="admin-card">
+        <h3 style="margin-top: 0; color: #fff; margin-bottom: 1.25rem;"><i class="fa fa-list"></i> Existing Categories ({{ categories.count }})</h3>
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Items Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                {% if cat.image %}
+                                    <img src="{{ cat.image.url }}" alt="{{ cat.name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-md);">
+                                {% else %}
+                                    <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--admin-text-muted);">
+                                        <i class="fa fa-folder"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <strong style="color: #fff; display: block;">{{ cat.name }}</strong>
+                                    <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Slug: {{ cat.slug }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-pill confirmed">{{ cat.item_count }} foods</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.4rem;">
+                                <a href="{% url 'dashboard_category_edit' cat.pk %}" class="btn-admin btn-admin-edit" style="padding: 0.3rem 0.6rem;"><i class="fa fa-edit"></i> Edit</a>
+                                <button type="button" class="btn-admin btn-admin-danger trigger-delete-modal" data-delete-url="{% url 'dashboard_category_delete' cat.pk %}" data-item-name="{{ cat.name }}" style="padding: 0.3rem 0.6rem;"><i class="fa fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--admin-text-muted); padding: 2rem;">No categories added yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock dashboard_content %}

@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock title %} | VegFood</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Design System Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block extra_css %}{% endblock extra_css %}
+</head>
+<body>
+    <!-- Message Toasts / Alerts -->
+    <div class="messages-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message-toast {{ message.tags }}">
+                    <span class="message-text">{{ message }}</span>
+                    <button class="close-toast" onclick="this.parentElement.remove();">&times;</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Responsive Navigation Header -->
+    <header>
+        <div class="header-container">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'logo.png' %}" alt="VegFood Logo">
+                <span>VegFood</span>
+            </a>
+
+            <!-- Desktop Nav links -->
+            <div class="nav-desktop">
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="{% url 'home' %}" class="nav-link"><i class="fa fa-home"></i> Home</a></li>
+                        <li><a href="{% url 'menu' %}" class="nav-link"><i class="fa fa-utensils"></i> Menu</a></li>
+                        {% if user.is_authenticated %}
+                            {% if user.is_superuser %}
+                                <li><a href="{% url 'dashboard_home' %}" class="nav-link" style="color: var(--color-primary); font-weight: 700;"><i class="fa fa-shield-alt"></i> Dashboard</a></li>
+                            {% endif %}
+                            <li><a href="{% url 'my_orders' %}" class="nav-link"><i class="fa fa-list-alt"></i> My Orders</a></li>
+                            <li><a href="{% url 'profile' %}" class="nav-link"><i class="fa fa-user"></i> Profile</a></li>
+                            <li><a href="{% url 'logout' %}" class="nav-link"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}" class="nav-link"><i class="fa fa-sign-in-alt"></i> Sign In</a></li>
+                            <li><a href="{% url 'register' %}" class="nav-link"><i class="fa fa-user-plus"></i> Register</a></li>
+                        {% endif %}
+                        <li>
+                            <a href="{% url 'cart_detail' %}" class="nav-link cart-nav-link">
+                                <i class="fa fa-shopping-cart"></i> Cart
+                                <span class="cart-badge" {% if not cart_count or cart_count == 0 %}style="display:none;"{% endif %}>{{ cart_count|default:0 }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="header-right">
+                    {% if user.is_authenticated %}
+                        <span class="welcome-msg">Hello, <strong>{{ user.first_name|default:user.username }}</strong> {% if user.is_superuser %}<span style="background: rgba(16,185,129,0.15); color: #10b981; font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">Superuser</span>{% endif %}</span>
+                    {% endif %}
+                    <a href="{% url 'menu' %}" class="btn btn--primary btn--sm">Order Now</a>
+                </div>
+            </div>
+
+            <!-- Hamburger Button for Mobile -->
+            <button class="hamburger" aria-label="Toggle Navigation">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Side Navigation Drawer -->
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
+    <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+        <div class="mobile-nav-header">
+            <a href="{% url 'home' %}" class="logo-link">
+                <img src="{% static 'logo.png' %}" alt="VegFood Logo">
+                <span>VegFood</span>
+            </a>
+            <button class="mobile-nav-close" aria-label="Close Navigation">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="{% url 'home' %}" class="mobile-nav-link"><i class="fa fa-home"></i> Home</a></li>
+            <li><a href="{% url 'menu' %}" class="mobile-nav-link"><i class="fa fa-utensils"></i> Menu</a></li>
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <li><a href="{% url 'dashboard_home' %}" class="mobile-nav-link" style="color: var(--color-primary); font-weight: 700;"><i class="fa fa-shield-alt"></i> Admin Dashboard</a></li>
+                {% endif %}
+                <li><a href="{% url 'my_orders' %}" class="mobile-nav-link"><i class="fa fa-list-alt"></i> My Orders</a></li>
+                <li><a href="{% url 'profile' %}" class="mobile-nav-link"><i class="fa fa-user"></i> Profile</a></li>
+                <li><a href="{% url 'logout' %}" class="mobile-nav-link"><i class="fa fa-sign-out-alt"></i> Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}" class="mobile-nav-link"><i class="fa fa-sign-in-alt"></i> Sign In</a></li>
+                <li><a href="{% url 'register' %}" class="mobile-nav-link"><i class="fa fa-user-plus"></i> Register</a></li>
+            {% endif %}
+            <li>
+                <a href="{% url 'cart_detail' %}" class="mobile-nav-link cart-nav-link">
+                    <i class="fa fa-shopping-cart"></i> Cart
+                    <span class="cart-badge" {% if not cart_count or cart_count == 0 %}style="display:none;"{% endif %}>{{ cart_count|default:0 }}</span>
+                </a>
+            </li>
+        </ul>
+        <div style="margin-top: auto; padding-top: var(--space-lg);">
+            {% if user.is_authenticated %}
+                <div class="welcome-msg" style="margin-bottom: var(--space-md);">Logged in as: <strong>{{ user.first_name|default:user.username }}</strong></div>
+            {% endif %}
+            <a href="{% url 'menu' %}" class="btn btn--primary" style="display: block;">Order Now</a>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="content-wrapper">
+        {% block body %}{% endblock body %}
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <!-- Logo and Description -->
+                <div class="footer-logo">
+                    <h2>VegFood</h2>
+                    <p style="color: #a8a29e; max-width: 400px; margin-top: var(--space-xs);">Serving 100% fresh, premium vegetarian fast food, crafted with the finest local ingredients and made with love daily!</p>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{% url 'menu' %}">Menu</a></li>
+                        <li><a href="{% url 'home' %}#about">About Us</a></li>
+                        <li><a href="{% url 'home' %}#testimonials">Testimonials</a></li>
+                        <li><a href="{% url 'home' %}#how-it-works">How It Works</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="footer-contact">
+                    <h3>Contact Us</h3>
+                    <p>Email: <a href="mailto:info@vegfood.com">info@vegfood.com</a></p>
+                    <p>Phone: <a href="tel:+1234567890">+123 456 7890</a></p>
+                    <p>Address: 123 Veg Street, Food City</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 VegFood. All rights reserved.</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JS Bundle -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock extra_js %}
+</body>
+</html>

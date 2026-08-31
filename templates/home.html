@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delicious Vegetarian Delights Delivered Fresh{% endblock title %}
+
+{% block body %}
+<!-- Premium Hero Section -->
+<section class="hero-section">
+    <div class="hero-text">
+        <span class="badge badge--veg" style="margin-bottom: var(--space-md);"><i class="fa fa-leaf"></i> 100% Vegetarian Restaurant</span>
+        <h1>Delicious Veggie Delights <span>Delivered Fresh</span> to Your Door</h1>
+        <p>Experience the finest selection of vegetarian fast food. Made daily with fresh, locally sourced ingredients and delivered hot, straight to you.</p>
+        <div class="hero-actions">
+            <a href="{% url 'menu' %}" class="btn btn--primary btn--lg">Explore Menu <i class="fa fa-arrow-right"></i></a>
+            <a href="#about" class="btn btn--outline btn--lg">Learn More</a>
+        </div>
+    </div>
+    <div class="hero-image-wrapper">
+        <img src="{% static 'veg-burger.jpg' %}" alt="Delicious Veg Burger">
+    </div>
+</section>
+
+<!-- Popular Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Popular Categories</h2>
+        <p class="section-subtitle">Explore our wide variety of categories and find your favorite food items instantly.</p>
+        
+        <div class="category-grid">
+            {% for cat in categories %}
+                <a href="{% url 'menu' %}?category={{ cat.id }}" class="category-card">
+                    {% if cat.image %}
+                        <img src="{{ cat.image.url }}" alt="{{ cat.name }}">
+                    {% else %}
+                        <div class="category-placeholder">
+                            <i class="fa fa-utensils"></i>
+                        </div>
+                    {% endif %}
+                    <h3>{{ cat.name }}</h3>
+                </a>
+            {% empty %}
+                <div class="text-center" style="grid-column: 1/-1; padding: var(--space-xl) 0;">
+                    <p>No categories available yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose VegFood Section -->
+<section class="features-section" id="how-it-works">
+    <div class="container">
+        <h2 class="section-title">Why Choose VegFood?</h2>
+        <p class="section-subtitle">We prioritize quality, speed, and flavor in every single order we serve.</p>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fa fa-leaf"></i>
+                </div>
+                <h3>100% Vegetarian</h3>
+                <p>Absolutely pure veg dishes made with pure vegetable-based oils and healthy ingredients.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fa fa-carrot"></i>
+                </div>
+                <h3>Fresh Ingredients</h3>
+                <p>Our ingredients are sourced fresh daily from trusted local farms and suppliers.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fa fa-shipping-fast"></i>
+                </div>
+                <h3>Fast & Eco Delivery</h3>
+                <p>Prompt delivery using smart routes to make sure your food arrives steaming hot.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Foods Section -->
+<section class="featured-section" id="menu">
+    <div class="container">
+        <h2 class="section-title">Featured Delicacies</h2>
+        <p class="section-subtitle">Hand-picked premium choices that our customers absolutely love.</p>
+        
+        <div class="food-grid">
+            {% for food in featured_foods %}
+                <div class="card food-card">
+                    <div class="food-card__image-container">
+                        {% if food.image %}
+                            <img src="{{ food.image.url }}" alt="{{ food.name }}">
+                        {% else %}
+                            <img src="{% static 'veg-pizza.jpg' %}" alt="Placeholder food item">
+                        {% endif %}
+                        <span class="badge badge--veg food-card__badge"><i class="fa fa-leaf"></i> VEG</span>
+                    </div>
+                    
+                    <div class="food-card__content">
+                        <span class="food-card__category">{{ food.category.name|default:"Delicacy" }}</span>
+                        <h3 class="food-card__title">{{ food.name }}</h3>
+                        <p class="food-card__description">{{ food.description|truncatewords:12 }}</p>
+                        
+                        <div class="food-card__footer">
+                            <span class="food-card__price">₹{{ food.price }}</span>
+                            <div style="display: flex; gap: var(--space-xs);">
+                                <a href="{% url 'food_detail' food.id %}" class="btn btn--neutral btn--sm" title="View Details"><i class="fa fa-eye"></i></a>
+                                <a href="{% url 'cart_add' food.id %}" class="btn btn--primary btn--sm"><i class="fa fa-cart-plus"></i> Add</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center" style="grid-column: 1/-1; padding: var(--space-xl) 0;">
+                    <p>No featured items available at this time.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center" style="margin-top: var(--space-xl);">
+            <a href="{% url 'menu' %}" class="btn btn--secondary btn--lg">View Entire Menu <i class="fa fa-chevron-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<!-- About Us Section -->
+<section class="container" id="about" style="padding: var(--space-3xl) var(--space-md); border-top: 1px solid var(--color-border);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2xl); align-items: center;">
+        <div>
+            <img src="{% static 'about-us-image.jpg' %}" alt="Our Kitchen story" style="border-radius: var(--radius-md); box-shadow: var(--shadow-lg); width: 100%; max-height: 400px; object-fit: cover;">
+        </div>
+        <div>
+            <span class="badge badge--veg" style="margin-bottom: var(--space-sm);">Our Story</span>
+            <h2 style="font-size: 2.25rem; margin-bottom: var(--space-md);">Crafting Joyful Vegetarian Culinary Experiences</h2>
+            <p style="font-size: 1.05rem; line-height: 1.7; color: var(--color-text-muted);">At VegFood, we are dedicated to delivering 100% vegetarian dishes that are fresh, flavorful, and wholesome. From traditional street delicacies to modern fusion twists, our menu is designed to excite your senses.</p>
+            <p style="font-size: 1.05rem; line-height: 1.7; color: var(--color-text-muted); margin-bottom: var(--space-lg);">We believe in sustainability, sourcing ingredients from green farms and using packaging that treats the planet kindly. Taste the freshness, join the movement.</p>
+            <a href="{% url 'menu' %}" class="btn btn--primary">Discover Our Menu</a>
+        </div>
+    </div>
+</section>
+
+<!-- Customer Testimonials Section -->
+<section class="testimonials-section" id="testimonials" style="border-top: 1px solid var(--color-border); padding-top: var(--space-3xl);">
+    <div class="container">
+        <h2 class="section-title">What Our Foodies Say</h2>
+        <p class="section-subtitle">Real feedback from our regular community members about their dining experience.</p>
+        
+        <div class="testimonials-grid">
+            {% for testimonial in testimonials %}
+                <div class="testimonial-card">
+                    <div class="star-rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= testimonial.rating %}
+                                <i class="fa fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="testimonial-comment">"{{ testimonial.comment }}"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">
+                            {{ testimonial.user.first_name|default:testimonial.user.username|slice:":1"|upper }}
+                        </div>
+                        <div class="testimonial-meta">
+                            <h4>{{ testimonial.user.get_full_name|default:testimonial.user.username }}</h4>
+                            <span>on {{ testimonial.food_item.name }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="testimonial-card">
+                    <div class="star-rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                    </div>
+                    <p class="testimonial-comment">"The Veg Burger is spectacular! Absolutely fresh, packed with dynamic flavors, and delivered in perfect time."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">P</div>
+                        <div class="testimonial-meta">
+                            <h4>Priya Sharma</h4>
+                            <span>Regular Customer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="star-rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                    </div>
+                    <p class="testimonial-comment">"A great selection of vegetarian fast food. The Paneer Wrap is healthy yet insanely delicious. Highly recommend!"</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">R</div>
+                        <div class="testimonial-meta">
+                            <h4>Rahul Mehta</h4>
+                            <span>Verified Buyer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="star-rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="far fa-star"></i>
+                    </div>
+                    <p class="testimonial-comment">"The quality never drops! The Veg Pizza has a wonderful crispy crust and premium cheese. Always a pleasure ordering."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">A</div>
+                        <div class="testimonial-meta">
+                            <h4>Ayesha Kapoor</h4>
+                            <span>Food Vlogger</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Subscription Section -->
+<section class="container" style="margin-bottom: var(--space-3xl);">
+    <div class="newsletter-card">
+        <h2>Subscribe to Our Newsletter</h2>
+        <p>Join our newsletter community to receive exclusive discount codes, menu arrivals, and recipes!</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault(); window.showToast('Thank you for subscribing!', 'success');">
+            <input type="email" class="form-input" placeholder="Your email address" required>
+            <button type="submit" class="btn btn--primary">Subscribe</button>
+        </form>
+    </div>
+</section>
+{% endblock body %}

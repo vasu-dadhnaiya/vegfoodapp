@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 Not Found{% endblock title %}
+
+{% block body %}
+<section class="section" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+    <div class="container" style="max-width: 600px;">
+        <div style="background: var(--bg-surface); padding: var(--space-2xl); border-radius: var(--radius-2xl); border: 1px solid var(--border-color); box-shadow: var(--shadow-xl);">
+            <div style="width: 80px; height: 80px; margin: 0 auto var(--space-lg); background: rgba(245, 158, 11, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--color-warning); font-size: 2.5rem;">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: var(--space-sm);">Page Not Found (404)</h1>
+            <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: var(--space-xl);">
+                We couldn't find the page or food item you were looking for. It might have been removed or moved.
+            </p>
+            <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'menu' %}" class="btn btn--primary"><i class="fa fa-utensils"></i> Explore Menu</a>
+                <a href="{% url 'home' %}" class="btn btn--outline"><i class="fa fa-home"></i> Go to Home</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock body %}

@@ -1,0 +1,74 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>Inventory & Stock Management</h1>
+        <p>Quickly update stock levels across all food items in bulk.</p>
+    </div>
+</div>
+
+<div class="admin-card">
+    <form method="POST" action="">
+        {% csrf_token %}
+        <div class="admin-card-header">
+            <h3 style="margin: 0;"><i class="fa fa-boxes" style="color: var(--admin-primary);"></i> Stock Quantities List</h3>
+            <button type="submit" class="btn-admin btn-admin-primary"><i class="fa fa-save"></i> Save All Stock Changes</button>
+        </div>
+
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Food Item</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Current Stock</th>
+                        <th>Stock Indicator</th>
+                        <th>Availability Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>
+                            <strong style="color: #fff;">{{ item.name }}</strong>
+                        </td>
+                        <td>{{ item.category.name|default:"Uncategorized" }}</td>
+                        <td>₹{{ item.price }}</td>
+                        <td>
+                            <input type="number" min="0" name="stock_{{ item.id }}" value="{{ item.stock }}" class="form-input" style="width: 100px; background: rgba(255,255,255,0.05); color: #fff; border-color: var(--admin-border); text-align: center;">
+                        </td>
+                        <td>
+                            {% if item.stock == 0 %}
+                                <span class="status-pill outofstock">Out of Stock</span>
+                            {% elif item.stock <= 10 %}
+                                <span class="status-pill lowstock">Low Stock ({{ item.stock }})</span>
+                            {% else %}
+                                <span class="status-pill instock">In Stock ({{ item.stock }})</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.is_available %}
+                                <span style="color: #10b981; font-weight: 600;"><i class="fa fa-check-circle"></i> Visible to Customers</span>
+                            {% else %}
+                                <span style="color: #ef4444; font-weight: 600;"><i class="fa fa-times-circle"></i> Hidden / Unavailable</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--admin-text-muted); padding: 2rem;">No items found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+            <button type="submit" class="btn-admin btn-admin-primary" style="padding: 0.75rem 2rem;"><i class="fa fa-save"></i> Save All Stock Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock dashboard_content %}

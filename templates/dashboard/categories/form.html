@@ -1,0 +1,53 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>Edit Category: {{ category.name }}</h1>
+        <p>Update category title, description, and image.</p>
+    </div>
+    <a href="{% url 'dashboard_category_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;"><i class="fa fa-arrow-left"></i> Back to Categories</a>
+</div>
+
+<div class="admin-card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #fff;">Category Name *</label>
+            {{ form.name }}
+            {% if form.name.errors %}
+                <span style="color: #f87171; font-size: 0.85rem;">{{ form.name.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #fff;">Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <span style="color: #f87171; font-size: 0.85rem;">{{ form.description.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; color: #fff;">Category Image</label>
+            {{ form.image }}
+            {% if form.image.errors %}
+                <span style="color: #f87171; font-size: 0.85rem;">{{ form.image.errors.0 }}</span>
+            {% endif %}
+            {% if category.image %}
+                <div style="margin-top: 0.75rem;">
+                    <span style="font-size: 0.8rem; color: var(--admin-text-muted);">Current Image:</span><br>
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" style="max-width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-md); margin-top: 0.25rem;">
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+            <a href="{% url 'dashboard_category_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;">Cancel</a>
+            <button type="submit" class="btn-admin btn-admin-primary"><i class="fa fa-save"></i> Update Category</button>
+        </div>
+    </form>
+</div>
+{% endblock dashboard_content %}

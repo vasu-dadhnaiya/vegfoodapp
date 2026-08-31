@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Orders - VegFood{% endblock title %}
+
+{% block body %}
+<div style="margin-bottom: var(--space-xl);">
+    <h1 style="font-size: 2.25rem; font-weight: 800;"><i class="fa fa-list-alt" style="color: var(--color-primary);"></i> Order History</h1>
+    <p style="color: var(--color-text-muted);">Track your recent orders and review your past delicacies.</p>
+</div>
+
+<div class="orders-list">
+    {% for order in orders %}
+        <div class="order-card">
+            <div class="order-details-left">
+                <h4>Order #{{ order.order_number }}</h4>
+                <p style="margin: 0; color: var(--color-text-muted); font-size: 0.9rem;"><i class="fa fa-calendar-alt" style="color: var(--color-primary); margin-right: 4px;"></i> Placed on: {{ order.created_at|date:"d M Y, h:i A" }}</p>
+                <p style="margin: 4px 0 0 0; color: var(--color-text-muted); font-size: 0.9rem;"><i class="fa fa-wallet" style="color: var(--color-primary); margin-right: 4px;"></i> Total Amount: <strong>₹{{ order.total_amount }}</strong></p>
+                <p style="margin: 4px 0 0 0; color: var(--color-text-muted); font-size: 0.9rem;"><i class="fa fa-utensils" style="color: var(--color-primary); margin-right: 4px;"></i> Items count: {{ order.items.count }} item{{ order.items.count|pluralize }}</p>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
+                <!-- Status Badge -->
+                <span class="badge badge--status-{{ order.status }}">
+                    {{ order.get_status_display }}
+                </span>
+                
+                <a href="{% url 'order_detail' order.id %}" class="btn btn--primary btn--sm">
+                    <i class="fa fa-eye"></i> Track Order
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <!-- Empty Orders State -->
+        <div class="card empty-state" style="padding: var(--space-3xl) var(--space-md);">
+            <i class="fa fa-receipt"></i>
+            <h2>No Orders Found</h2>
+            <p>You haven't placed any orders yet. Head over to our vegetarian menu to place your first order!</p>
+            <a href="{% url 'menu' %}" class="btn btn--primary btn--lg">Browse Menu</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock body %}

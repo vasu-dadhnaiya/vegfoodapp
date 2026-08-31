@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}403 Forbidden - Access Denied{% endblock title %}
+
+{% block body %}
+<section class="section" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+    <div class="container" style="max-width: 600px;">
+        <div style="background: var(--bg-surface); padding: var(--space-2xl); border-radius: var(--radius-2xl); border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: var(--shadow-xl);">
+            <div style="width: 80px; height: 80px; margin: 0 auto var(--space-lg); background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 2.5rem;">
+                <i class="fa fa-lock"></i>
+            </div>
+            <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: var(--space-sm);">Access Denied (403)</h1>
+            <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: var(--space-xl); line-height: 1.6;">
+                {{ exception|default:"Only Super Users are authorized to access administrative item management, pricing, categories, and backend dashboard features." }}
+            </p>
+            <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                <a href="{% url 'menu' %}" class="btn btn--primary"><i class="fa fa-utensils"></i> Browse Food Menu</a>
+                <a href="{% url 'home' %}" class="btn btn--outline"><i class="fa fa-home"></i> Back to Home</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock body %}

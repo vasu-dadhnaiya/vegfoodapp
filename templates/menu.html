@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Explore Our Vegetarian Menu{% endblock title %}
+
+{% block body %}
+<div class="menu-header">
+    <span class="badge badge--veg" style="margin-bottom: var(--space-sm);"><i class="fa fa-leaf"></i> Pure Veg Specialties</span>
+    <h1>Explore Our Pure Vegetarian Menu</h1>
+    <p style="color: var(--color-text-muted);">From delicious burgers to traditional dosas, choose your favorite dishes and order fresh today.</p>
+</div>
+
+<!-- Search & Sort Controls -->
+<div class="menu-controls">
+    <!-- Search Form -->
+    <form method="get" action="{% url 'menu' %}" class="search-filter-form">
+        {% if selected_category %}
+            <input type="hidden" name="category" value="{{ selected_category }}">
+        {% endif %}
+        {% if sort_by %}
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+        {% endif %}
+        <input type="text" name="q" placeholder="Search for delicious dishes (e.g. Dosa, Pizza)..." class="form-input" value="{{ query }}" aria-label="Search food items">
+        <button type="submit" class="btn btn--primary"><i class="fa fa-search"></i> Search</button>
+    </form>
+
+    <!-- Sort Dropdown -->
+    <form method="get" action="{% url 'menu' %}" id="sort-form">
+        {% if selected_category %}
+            <input type="hidden" name="category" value="{{ selected_category }}">
+        {% endif %}
+        {% if query %}
+            <input type="hidden" name="q" value="{{ query }}">
+        {% endif %}
+        <select name="sort" class="sort-select" onchange="document.getElementById('sort-form').submit();" aria-label="Sort dishes">
+            <option value="">Sort By</option>
+            <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+        </select>
+    </form>
+</div>
+
+<!-- Category Filter Chips -->
+<div class="category-chips">
+    <a href="{% url 'menu' %}{% if query %}?q={{ query }}{% endif %}{% if sort_by %}{% if query %}&{% else %}?{% endif %}sort={{ sort_by }}{% endif %}" class="category-chip {% if not selected_category %}active{% endif %}">
+        All Dishes
+    </a>
+    {% for cat in categories %}
+        <a href="{% url 'menu' %}?category={{ cat.id }}{% if query %}&q={{ query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="category-chip {% if selected_category|add:"0" == cat.id or selected_category == cat.name %}active{% endif %}">
+            {{ cat.name }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Food Grid -->
+<div class="food-grid">
+    {% for food in foods %}
+        <div class="card food-card {% if not food.is_in_stock %}food-card--unavailable{% endif %}">
+            <div class="food-card__image-container">
+                {% if not food.is_in_stock %}
+                    <span class="food-card__status-tag">Out of Stock</span>
+                {% elif food.has_discount %}
+                    <span class="food-card__status-tag" style="background: #10b981;">{{ food.discount_percent }}% OFF</span>
+                {% endif %}
+                
+                {% if food.image %}
+                    <img src="{{ food.image.url }}" alt="{{ food.name }}">
+                {% else %}
+                    <img src="{% static 'veg-pizza.jpg' %}" alt="Placeholder food item">
+                {% endif %}
+                <span class="badge badge--veg food-card__badge"><i class="fa fa-leaf"></i> VEG</span>
+            </div>
+            
+            <div class="food-card__content">
+                <span class="food-card__category">{{ food.category.name|default:"Delicacy" }}</span>
+                <h3 class="food-card__title">{{ food.name }}</h3>
+                <p class="food-card__description">{{ food.description|truncatewords:14 }}</p>
+                
+                <div class="food-card__footer">
+                    <div>
+                        {% if food.has_discount %}
+                            <span class="food-card__price" style="color: #10b981;">₹{{ food.discount_price }}</span>
+                            <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 0.85rem; margin-left: 0.25rem;">₹{{ food.price }}</span>
+                        {% else %}
+                            <span class="food-card__price">₹{{ food.price }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; gap: var(--space-xs);">
+                        <a href="{% url 'food_detail' food.id %}" class="btn btn--neutral btn--sm" title="View Details"><i class="fa fa-eye"></i> Details</a>
+                        {% if food.is_in_stock %}
+                            <a href="{% url 'cart_add' food.id %}" class="btn btn--primary btn--sm"><i class="fa fa-cart-plus"></i> Add</a>
+                        {% else %}
+                            <button class="btn btn--neutral btn--sm" disabled style="cursor: not-allowed; opacity: 0.5;">Out of Stock</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <!-- Empty State Screen -->
+        <div class="empty-state" style="grid-column: 1 / -1;">
+            <i class="fa fa-search-minus"></i>
+            <h3>No Dishes Found</h3>
+            <p>We couldn't find any dishes matching your query or filter. Try checking your spelling or looking in a different category.</p>
+            <a href="{% url 'menu' %}" class="btn btn--primary">View All Dishes</a>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Cart Quick Redirect Button -->
+{% if cart_count > 0 %}
+    <div class="text-center" style="margin-top: var(--space-2xl);">
+        <a href="{% url 'cart_detail' %}" class="btn btn--secondary btn--lg">
+            <i class="fa fa-shopping-cart"></i> Go to Shopping Cart ({{ cart_count }} items) <i class="fa fa-arrow-right"></i>
+        </a>
+    </div>
+{% endif %}
+{% endblock body %}

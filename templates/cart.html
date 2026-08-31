@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Shopping Cart - VegFood{% endblock title %}
+
+{% block body %}
+<div style="margin-bottom: var(--space-xl);">
+    <h1 style="font-size: 2.25rem; font-weight: 800;"><i class="fa fa-shopping-cart" style="color: var(--color-primary);"></i> Your Shopping Cart</h1>
+    <p style="color: var(--color-text-muted);">Manage your selected dishes and proceed to checkout.</p>
+</div>
+
+{% if cart_items %}
+    <div class="cart-layout">
+        <!-- Left: Cart Items List -->
+        <div class="cart-items-list">
+            {% for item in cart_items %}
+                <div class="cart-item-card" id="cart-row-{{ item.food.id }}">
+                    {% if item.food.image %}
+                        <img src="{{ item.food.image.url }}" alt="{{ item.food.name }}">
+                    {% else %}
+                        <img src="{% static 'veg-pizza.jpg' %}" alt="Placeholder food item">
+                    {% endif %}
+                    
+                    <div class="cart-item-details">
+                        <h4 class="cart-item-title">{{ item.food.name }}</h4>
+                        <span class="cart-item-meta">{{ item.food.category.name|default:"Delicacy" }}</span>
+                    </div>
+
+                    <div class="cart-item-right">
+                        <span class="cart-item-price">₹{{ item.price }}</span>
+                        
+                        <!-- Quantity picker -->
+                        <div class="qty-widget">
+                            <form method="post" action="{% url 'cart_update' %}" class="qty-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="food_id" value="{{ item.food.id }}">
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" class="qty-btn"><i class="fa fa-minus"></i></button>
+                            </form>
+                            
+                            <span class="qty-input-field" id="qty-val-{{ item.food.id }}" style="display: inline-block; text-align: center; width: 30px;">{{ item.quantity }}</span>
+                            
+                            <form method="post" action="{% url 'cart_update' %}" class="qty-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="food_id" value="{{ item.food.id }}">
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" class="qty-btn"><i class="fa fa-plus"></i></button>
+                            </form>
+                        </div>
+
+                        <!-- Subtotal -->
+                        <span class="cart-item-price" id="subtotal-val-{{ item.food.id }}" style="color: var(--color-primary); min-width: 80px; text-align: right;">₹{{ item.total }}</span>
+
+                        <!-- Remove Action -->
+                        <a href="{% url 'cart_remove' item.food.id %}" class="btn btn--neutral btn--sm" style="color: var(--color-error);" title="Remove Item">
+                            <i class="fa fa-trash-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Free Delivery Info banner -->
+            <div style="margin-top: var(--space-md);">
+                {% if subtotal >= 500 %}
+                    <div style="background-color: var(--color-success-bg); color: #065f46; border: 1px solid var(--color-success-border); padding: var(--space-md); border-radius: var(--radius-md); font-weight: 600;">
+                        <i class="fa fa-gift"></i> Congratulations! You unlocked <strong>FREE DELIVERY</strong> on orders over ₹500!
+                    </div>
+                {% else %}
+                    <div style="background-color: var(--color-warning-bg); color: #92400e; border: 1px solid var(--color-warning-border); padding: var(--space-md); border-radius: var(--radius-md); font-weight: 600;">
+                        <i class="fa fa-info-circle"></i> Orders of <strong>₹500</strong> or more qualify for <strong>FREE DELIVERY</strong>! (Current delivery fee is ₹40).
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Page actions -->
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md); flex-wrap: wrap;">
+                <a href="{% url 'menu' %}" class="btn btn--outline"><i class="fa fa-arrow-left"></i> Continue Shopping</a>
+                <a href="{% url 'cart_clear' %}" class="btn btn--danger" onclick="return confirm('Are you sure you want to clear your entire cart?');"><i class="fa fa-trash-alt"></i> Clear Cart</a>
+            </div>
+        </div>
+
+        <!-- Right: Sticky Summary Card -->
+        <div class="cart-summary-card">
+            <h3 class="cart-summary-title">Order Summary</h3>
+            
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="summary-subtotal">₹{{ subtotal }}</span>
+            </div>
+            
+            <div class="summary-row">
+                <span>Delivery Charge</span>
+                <span id="summary-delivery">₹{{ delivery_charge }}</span>
+            </div>
+            
+            <div class="summary-row summary-row--total">
+                <span>Total Amount</span>
+                <span id="summary-total">₹{{ grand_total }}</span>
+            </div>
+
+            <a href="{% url 'checkout' %}" class="btn btn--primary btn--lg" style="width: 100%; margin-top: var(--space-md); display: flex; align-items: center; justify-content: center; gap: var(--space-xs);">
+                <i class="fa fa-credit-card"></i> Proceed to Checkout
+            </a>
+        </div>
+    </div>
+{% else %}
+    <!-- Empty Cart State -->
+    <div class="card empty-state" style="padding: var(--space-3xl) var(--space-md);">
+        <i class="fa fa-shopping-basket"></i>
+        <h2>Your Shopping Cart is Empty!</h2>
+        <p>Looks like you haven't added any delicacies to your cart yet. Check out our fresh veggie menu and order something delicious today.</p>
+        <a href="{% url 'menu' %}" class="btn btn--primary btn--lg">Explore Menu</a>
+    </div>
+{% endif %}
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+    // AJAX quantity updates
+    document.querySelectorAll('.qty-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const foodId = formData.get('food_id');
+                    const qtyValEl = document.getElementById(`qty-val-${foodId}`);
+                    const subtotalEl = document.getElementById(`subtotal-val-${foodId}`);
+                    
+                    if (data.quantity === 0) {
+                        const row = document.getElementById(`cart-row-${foodId}`);
+                        if (row) row.remove();
+                        if (data.total_items === 0) {
+                            location.reload();
+                        }
+                    } else {
+                        if (qtyValEl) qtyValEl.innerText = data.quantity;
+                        if (subtotalEl) subtotalEl.innerText = `₹${data.item_total.toFixed(2)}`;
+                    }
+                    
+                    // Update totals
+                    const subtotalValEl = document.getElementById('summary-subtotal');
+                    const deliveryValEl = document.getElementById('summary-delivery');
+                    const totalValEl = document.getElementById('summary-total');
+
+                    if (subtotalValEl) subtotalValEl.innerText = `₹${data.subtotal.toFixed(2)}`;
+                    if (deliveryValEl) deliveryValEl.innerText = `₹${data.delivery_charge.toFixed(2)}`;
+                    if (totalValEl) totalValEl.innerText = `₹${data.grand_total.toFixed(2)}`;
+                    
+                    // Update cart count badge in header
+                    const badges = document.querySelectorAll('.cart-badge');
+                    badges.forEach(badge => {
+                        badge.innerText = data.total_items;
+                        badge.style.display = data.total_items > 0 ? 'inline-block' : 'none';
+                    });
+
+                    window.showToast("Cart updated successfully!", "success");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                window.showToast("Error updating cart.", "error");
+            });
+        });
+    });
+</script>
+{% endblock extra_js %}

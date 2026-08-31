@@ -1,0 +1,90 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>Customer Orders Fulfillment</h1>
+        <p>Monitor, track, and update order status (Pending &rarr; Confirmed &rarr; Preparing &rarr; Out for Delivery &rarr; Delivered / Cancelled).</p>
+    </div>
+</div>
+
+<!-- Search & Status Filter -->
+<div class="admin-card" style="padding: var(--space-md) var(--space-lg);">
+    <form method="GET" action="" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <div style="flex: 1; min-width: 240px;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by Order #, Customer Name, Email, or Phone..." class="form-input" style="background: rgba(255,255,255,0.05); color: #fff; border-color: var(--admin-border);">
+        </div>
+        <div>
+            <select name="status" class="form-input select-input" style="background: #1f2937; color: #fff; border-color: var(--admin-border);">
+                <option value="">-- All Statuses --</option>
+                {% for code, label in status_choices %}
+                    <option value="{{ code }}" {% if selected_status == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn-admin btn-admin-primary"><i class="fa fa-filter"></i> Filter</button>
+        {% if query or selected_status %}
+            <a href="{% url 'dashboard_order_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Orders Table -->
+<div class="admin-card">
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer Name</th>
+                    <th>Contact Info</th>
+                    <th>Total Amount</th>
+                    <th>Order Status</th>
+                    <th>Date & Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong style="color: #fff;">#{{ order.order_number }}</strong></td>
+                    <td>{{ order.name|default:order.user.username }}</td>
+                    <td>
+                        <div style="font-size: 0.85rem;">
+                            <div><i class="fa fa-phone" style="font-size: 0.75rem; color: var(--admin-text-muted);"></i> {{ order.phone }}</div>
+                            <div style="color: var(--admin-text-muted);"><i class="fa fa-envelope" style="font-size: 0.75rem;"></i> {{ order.email }}</div>
+                        </div>
+                    </td>
+                    <td><strong style="color: var(--admin-primary);">₹{{ order.total_amount }}</strong></td>
+                    <td>
+                        <!-- Inline Status Selector -->
+                        <form method="POST" action="{% url 'dashboard_order_status_update' order.pk %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <select name="status" onchange="this.form.submit()" class="status-pill {{ order.status }}" style="border: 1px solid var(--admin-border); cursor: pointer; outline: none; padding: 0.3rem 0.6rem;">
+                                {% for code, label in status_choices %}
+                                    <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                    <td style="font-size: 0.85rem; color: var(--admin-text-muted);">
+                        {{ order.created_at|date:"M d, Y - h:i A" }}
+                    </td>
+                    <td>
+                        <a href="{% url 'dashboard_order_detail' order.pk %}" class="btn-admin btn-admin-edit" style="padding: 0.3rem 0.75rem;"><i class="fa fa-eye"></i> Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">
+                        No customer orders found matching your search criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock dashboard_content %}

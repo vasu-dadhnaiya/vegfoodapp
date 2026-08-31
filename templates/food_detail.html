@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ food.name }} - VegFood Delicacy{% endblock title %}
+
+{% block body %}
+<div class="detail-layout">
+    <!-- Left Column: Gallery / Image -->
+    <div class="detail-gallery">
+        {% if food.image %}
+            <img src="{{ food.image.url }}" alt="{{ food.name }}">
+        {% else %}
+            <img src="{% static 'veg-pizza.jpg' %}" alt="Placeholder food item">
+        {% endif %}
+        <span class="badge badge--veg" style="position: absolute; top: 16px; left: 16px; z-index: 10;"><i class="fa fa-leaf"></i> VEG</span>
+    </div>
+
+    <!-- Right Column: Details Content -->
+    <div class="detail-content">
+        <div class="detail-title-wrapper">
+            <span class="badge badge--veg"><i class="fa fa-tag"></i> {{ food.category.name|default:"Delicacy" }}</span>
+            {% if food.is_in_stock %}
+                <span class="badge badge--status-delivered"><i class="fa fa-check-circle"></i> In Stock ({{ food.stock }} available)</span>
+            {% else %}
+                <span class="badge badge--status-cancelled"><i class="fa fa-times-circle"></i> Out of Stock</span>
+            {% endif %}
+        </div>
+        
+        <h1 class="detail-title">{{ food.name }}</h1>
+        
+        <!-- Ratings snippet -->
+        {% if avg_rating %}
+            <div style="display: flex; align-items: center; gap: var(--space-xs);">
+                <div class="star-rating">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= avg_rating %}
+                            <i class="fa fa-star"></i>
+                        {% elif forloop.counter|add:"-0.5" <= avg_rating %}
+                            <i class="fa fa-star-half-alt"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span style="font-weight: 700; font-size: 0.95rem;">{{ avg_rating }} / 5.0</span>
+                <span style="color: var(--color-text-muted); font-size: 0.85rem;">({{ reviews.count }} review{{ reviews.count|pluralize }})</span>
+            </div>
+        {% endif %}
+
+        <div class="detail-price">
+            {% if food.has_discount %}
+                <span style="color: #10b981;">₹{{ food.discount_price }}</span>
+                <span style="text-decoration: line-through; color: var(--color-text-muted); font-size: 1.2rem; margin-left: 0.5rem;">₹{{ food.price }}</span>
+                <span class="badge badge--veg" style="background: rgba(16, 185, 129, 0.15); color: #10b981; margin-left: 0.5rem;">{{ food.discount_percent }}% OFF</span>
+            {% else %}
+                ₹{{ food.price }}
+            {% endif %}
+        </div>
+        
+        <p class="detail-description">
+            {% if food.description %}
+                {{ food.description }}
+            {% else %}
+                Savor the premium taste of our freshly cooked {{ food.name }}. Prepared with high-quality local vegetables, organic cheese, and hand-ground green spices. Order now to experience pure vegetarian joy!
+            {% endif %}
+        </p>
+
+        {% if food.is_in_stock %}
+            <form method="post" action="{% url 'cart_add' food.id %}?next=cart" style="margin-top: var(--space-md);">
+                {% csrf_token %}
+                <div style="margin-bottom: var(--space-lg);">
+                    <label for="quantity" style="display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: var(--space-xs);">Select Quantity (Max {{ food.stock }}):</label>
+                    <div class="qty-widget">
+                        <button type="button" class="qty-btn" id="btn-dec"><i class="fa fa-minus"></i></button>
+                        <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ food.stock }}" readonly class="qty-input-field">
+                        <button type="button" class="qty-btn" id="btn-inc"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn--primary btn--lg" style="width: 100%; max-width: 320px; display: flex; align-items: center; justify-content: center; gap: var(--space-xs);">
+                    <i class="fa fa-shopping-cart"></i> Add to Cart & Checkout
+                </button>
+            </form>
+        {% else %}
+            <button class="btn btn--neutral btn--lg" disabled style="width: 100%; max-width: 320px; cursor: not-allowed; opacity: 0.6;">
+                Out of Stock
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Reviews Section -->
+<section class="reviews-container">
+    <div class="reviews-grid-header">
+        <h2>Customer Reviews</h2>
+        {% if avg_rating %}
+            <div class="reviews-summary">
+                <span class="reviews-summary-value">{{ avg_rating }}</span>
+                <div>
+                    <div class="star-rating">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_rating %}
+                                <i class="fa fa-star"></i>
+                            {% elif forloop.counter|add:"-0.5" <= avg_rating %}
+                                <i class="fa fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 2px;">Avg customer rating</div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="reviews-list">
+        {% for review in reviews %}
+            <div class="review-item-card">
+                <div class="review-item-meta">
+                    <span class="review-item-user"><i class="fa fa-user-circle"></i> {{ review.user.first_name|default:review.user.username }}</span>
+                    <span>{{ review.created_at|date:"d M Y" }}</span>
+                </div>
+                <div class="star-rating" style="margin-bottom: var(--space-xs);">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <i class="fa fa-star"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <p class="review-item-comment">"{{ review.comment }}"</p>
+            </div>
+        {% empty %}
+            <div class="text-center" style="padding: var(--space-xl) 0; color: var(--color-text-muted);">
+                <i class="far fa-comments fa-2x" style="opacity: 0.4; margin-bottom: var(--space-xs); display: block;"></i>
+                <p>No reviews yet for this dish. Be the first to share your experience!</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Review Form logic -->
+    {% if user.is_authenticated %}
+        {% if has_reviewed %}
+            <div style="background-color: var(--color-primary-light); color: var(--color-primary); border: 1px solid rgba(16, 185, 129, 0.3); padding: var(--space-md); border-radius: var(--radius-md); text-align: center; font-weight: 600;">
+                <i class="fa fa-check-circle"></i> You have already reviewed this item. Thank you!
+            </div>
+        {% elif not can_review %}
+            <div style="background-color: var(--color-warning-bg); color: #92400e; border: 1px solid var(--color-warning-border); padding: var(--space-md); border-radius: var(--radius-md); text-align: center; font-weight: 600;">
+                <i class="fa fa-exclamation-triangle"></i> You can only review items that you have purchased and had successfully delivered.
+            </div>
+        {% else %}
+            <div class="review-form-card">
+                <h3>Write a Customer Review</h3>
+                <form method="post" action="{% url 'add_review' food.id %}" style="display: flex; flex-direction: column; gap: var(--space-md);">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label" for="id_rating">Rating (1 to 5 stars)</label>
+                        {{ review_form.rating }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_comment">Your Experience</label>
+                        {{ review_form.comment }}
+                    </div>
+                    <button type="submit" class="btn btn--primary" style="align-self: flex-start;"><i class="fa fa-paper-plane"></i> Submit Review</button>
+                </form>
+            </div>
+        {% endif %}
+    {% else %}
+        <div style="background-color: var(--color-bg-muted); border: 1px solid var(--color-border); padding: var(--space-md); border-radius: var(--radius-md); text-align: center;">
+            <p style="margin: 0; color: var(--color-text-muted);">Please <a href="{% url 'login' %}?next={% url 'food_detail' food.id %}" style="color: var(--color-primary); font-weight: 700;">sign in</a> to submit a review.</p>
+        </div>
+    {% endif %}
+</section>
+
+<!-- Related Food Items Section -->
+<section class="related-section">
+    <h2 style="margin-bottom: var(--space-lg);"><i class="fa fa-thumbs-up" style="color: var(--color-primary);"></i> You May Also Like</h2>
+    <div class="food-grid">
+        {% for rel in related_foods %}
+            <div class="card food-card">
+                <div class="food-card__image-container" style="height: 160px;">
+                    {% if rel.image %}
+                        <img src="{{ rel.image.url }}" alt="{{ rel.name }}">
+                    {% else %}
+                        <img src="{% static 'veg-pizza.jpg' %}" alt="Placeholder food item">
+                    {% endif %}
+                    <span class="badge badge--veg food-card__badge"><i class="fa fa-leaf"></i> VEG</span>
+                </div>
+                
+                <div class="food-card__content">
+                    <h3 class="food-card__title" style="font-size: 1.15rem;">{{ rel.name }}</h3>
+                    <p class="food-card__description">{{ rel.description|truncatewords:8 }}</p>
+                    
+                    <div class="food-card__footer">
+                        <span class="food-card__price" style="font-size: 1.15rem;">₹{{ rel.price }}</span>
+                        <div style="display: flex; gap: var(--space-xs);">
+                            <a href="{% url 'food_detail' rel.id %}" class="btn btn--neutral btn--sm" title="View"><i class="fa fa-eye"></i></a>
+                            <a href="{% url 'cart_add' rel.id %}" class="btn btn--primary btn--sm"><i class="fa fa-plus"></i> Add</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center" style="grid-column: 1/-1; padding: var(--space-md) 0; color: var(--color-text-muted);">
+                <p>No similar items found.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock body %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnDec = document.getElementById('btn-dec');
+        const btnInc = document.getElementById('btn-inc');
+        const qtyInput = document.getElementById('quantity');
+        if (btnDec && btnInc && qtyInput) {
+            btnDec.addEventListener('click', function() {
+                let val = parseInt(qtyInput.value) || 1;
+                if (val > 1) {
+                    qtyInput.value = val - 1;
+                }
+            });
+            btnInc.addEventListener('click', function() {
+                let val = parseInt(qtyInput.value) || 1;
+                if (val < 20) {
+                    qtyInput.value = val + 1;
+                }
+            });
+        }
+    });
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    {% if active_tab == 'register' %}Register{% else %}Sign In{% endif %} - VegFood
+{% endblock title %}
+
+{% block extra_css %}
+<style>
+    /* Scoped overrides to hide default header/footer on auth page to focus purely on auth experience */
+    header, footer {
+        display: none !important;
+    }
+    .content-wrapper {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: var(--space-md) 0;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block body %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Back to Home Link -->
+        <a href="{% url 'home' %}" style="display: inline-flex; align-items: center; gap: var(--space-xs); font-size: 0.9rem; font-weight: 700; color: var(--color-primary); align-self: flex-start; margin-bottom: var(--space-xs);">
+            <i class="fa fa-arrow-left"></i> Back to Home
+        </a>
+
+        <!-- Header: Logo and Title -->
+        <div class="auth-header">
+            <img src="{% static 'logo.png' %}" alt="VegFood Logo">
+            <h2>VegFood</h2>
+            <p>{% if active_tab == 'register' %}Create your account today{% else %}Sign in to your account{% endif %}</p>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div class="auth-tabs">
+            <a href="{% url 'login' %}{% if next %}?next={{ next }}{% endif %}" class="auth-tab {% if active_tab == 'login' or not active_tab %}active{% endif %}">Sign In</a>
+            <a href="{% url 'register' %}" class="auth-tab {% if active_tab == 'register' %}active{% endif %}">Register</a>
+        </div>
+
+        <!-- Alerts / Messages for Auth Forms -->
+        {% if messages %}
+            <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+                {% for message in messages %}
+                    <div style="padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600; 
+                        {% if message.tags == 'error' %}
+                            background-color: var(--color-error-bg); color: #991b1b; border: 1px solid var(--color-error-border);
+                        {% else %}
+                            background-color: var(--color-success-bg); color: #065f46; border: 1px solid var(--color-success-border);
+                        {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if active_tab == 'register' %}
+            <!-- Registration Form -->
+            <form method="post" action="{% url 'register' %}" style="display: flex; flex-direction: column; gap: var(--space-md);">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="reg_full_name">Full Name *</label>
+                    <input type="text" name="full_name" id="reg_full_name" placeholder="Enter your full name" required class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="reg_email">Email Address *</label>
+                    <input type="email" name="email" id="reg_email" placeholder="name@example.com" required class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="reg_password">Password *</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" name="password" id="reg_password" placeholder="Create a strong password" required class="form-input">
+                        <button type="button" class="password-toggle-icon" onclick="togglePasswordVisibility('reg_password', this)" aria-label="Toggle Password Visibility">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--lg" style="margin-top: var(--space-xs);">
+                    Create Account
+                </button>
+            </form>
+            
+            <p style="text-align: center; font-size: 0.9rem; color: var(--color-text-muted); margin-top: var(--space-xs);">
+                Already have an account? <a href="{% url 'login' %}" style="color: var(--color-primary); font-weight: 700;">Sign In</a>
+            </p>
+
+        {% else %}
+            <!-- Login Form -->
+            <form method="post" action="{% url 'login' %}?next={{ next }}" style="display: flex; flex-direction: column; gap: var(--space-md);">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                
+                <div class="form-group">
+                    <label class="form-label" for="login_email">Email Address *</label>
+                    <input type="email" name="username" id="login_email" placeholder="name@example.com" required class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="form-label" for="login_password" style="margin: 0;">Password *</label>
+                        <a href="#" style="font-size: 0.8rem; font-weight: 600; color: var(--color-primary);">Forgot Password?</a>
+                    </div>
+                    <div class="password-input-wrapper">
+                        <input type="password" name="password" id="login_password" placeholder="Enter your password" required class="form-input">
+                        <button type="button" class="password-toggle-icon" onclick="togglePasswordVisibility('login_password', this)" aria-label="Toggle Password Visibility">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn--primary btn--lg" style="margin-top: var(--space-xs);">
+                    Sign In
+                </button>
+            </form>
+            
+            <p style="text-align: center; font-size: 0.9rem; color: var(--color-text-muted); margin-top: var(--space-xs);">
+                Don't have an account? <a href="{% url 'register' %}" style="color: var(--color-primary); font-weight: 700;">Register Now</a>
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility(inputId, btnEl) {
+        const input = document.getElementById(inputId);
+        const icon = btnEl.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock body %}

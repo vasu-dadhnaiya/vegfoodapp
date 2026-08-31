@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order Confirmed! - VegFood{% endblock title %}
+
+{% block body %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh; padding: var(--space-xl) 0;">
+    <div class="card" style="max-width: 580px; width: 100%; padding: var(--space-2xl); text-align: center; border-top: 5px solid var(--color-primary); box-shadow: var(--shadow-premium);">
+        <i class="fa fa-check-circle" style="font-size: 5rem; color: var(--color-primary); margin-bottom: var(--space-md); display: block;"></i>
+        
+        <h1 style="font-size: 2.25rem; font-weight: 800; margin-bottom: var(--space-xs);">Order Placed Successfully!</h1>
+        <p style="color: var(--color-text-muted); margin-bottom: var(--space-xl);">Thank you for choosing VegFood. Your order has been registered, and our kitchen has started preparing your fresh vegetarian food.</p>
+        
+        <div style="background-color: var(--color-bg-muted); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: left; margin-bottom: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-sm);">
+            <h3 style="font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-xs); margin-bottom: var(--space-xs); text-align: center; color: var(--color-text-main);"><i class="fa fa-file-invoice"></i> Summary Details</h3>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                <span style="color: var(--color-text-muted);">Order Number</span>
+                <strong style="color: var(--color-text-main);">#{{ order.order_number }}</strong>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                <span style="color: var(--color-text-muted);">Customer Name</span>
+                <span style="color: var(--color-text-main); font-weight: 600;">{{ order.user.get_full_name|default:order.user.username }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                <span style="color: var(--color-text-muted);">Contact Phone</span>
+                <span style="color: var(--color-text-main); font-weight: 600;">{{ order.phone }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+                <span style="color: var(--color-text-muted);">Delivery Address</span>
+                <span style="color: var(--color-text-main); font-weight: 600; text-align: right; max-width: 250px;">{{ order.delivery_address }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 1.1rem; border-top: 1px solid var(--color-border); padding-top: var(--space-sm); margin-top: var(--space-xs); font-weight: 800;">
+                <span style="color: var(--color-text-main);">Amount to Pay (COD)</span>
+                <span style="color: var(--color-secondary);">₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'order_detail' order.id %}" class="btn btn--primary btn--lg"><i class="fa fa-map-marker-alt"></i> Track Order Status</a>
+            <a href="{% url 'home' %}" class="btn btn--neutral btn--lg"><i class="fa fa-home"></i> Return Home</a>
+        </div>
+    </div>
+</div>
+{% endblock body %}

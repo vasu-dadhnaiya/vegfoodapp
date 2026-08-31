@@ -1,0 +1,93 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>Manage Order #{{ order.order_number }}</h1>
+        <p>Placed on {{ order.created_at|date:"F j, Y at h:i A" }} by {{ order.user.username }}</p>
+    </div>
+    <a href="{% url 'dashboard_order_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;"><i class="fa fa-arrow-left"></i> Back to Orders</a>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl);">
+    <!-- Left Column: Order Items -->
+    <div class="admin-card">
+        <h3 style="margin-top: 0; color: #fff; margin-bottom: 1.25rem;"><i class="fa fa-utensils" style="color: var(--admin-primary);"></i> Order Items</h3>
+        
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>
+                            <strong style="color: #fff;">{{ item.food_name|default:item.food_item.name }}</strong>
+                        </td>
+                        <td>₹{{ item.price }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td><strong style="color: var(--admin-primary);">₹{{ item.subtotal }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="border-top: 1px solid var(--admin-border); margin-top: 1.5rem; padding-top: 1rem; text-align: right;">
+            <p style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #fff;">Total Order Amount: <span style="color: var(--admin-primary);">₹{{ order.total_amount }}</span></p>
+        </div>
+    </div>
+
+    <!-- Right Column: Customer Info & Status Manager -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-xl);">
+        <!-- Status Changer Card -->
+        <div class="admin-card">
+            <h3 style="margin-top: 0; color: #fff; margin-bottom: 1rem;"><i class="fa fa-tasks" style="color: #f59e0b;"></i> Update Order Status</h3>
+            <form method="POST" action="{% url 'dashboard_order_status_update' order.pk %}">
+                {% csrf_token %}
+                <label style="display: block; font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 0.5rem;">Current Status: <span class="status-pill {{ order.status }}">{{ order.get_status_display }}</span></label>
+                
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                    <select name="status" class="form-input select-input" style="background: #1f2937; color: #fff; border-color: var(--admin-border); flex: 1;">
+                        {% for code, label in status_choices %}
+                            <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-admin btn-admin-primary"><i class="fa fa-check"></i> Update</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Customer Delivery Info -->
+        <div class="admin-card">
+            <h3 style="margin-top: 0; color: #fff; margin-bottom: 1rem;"><i class="fa fa-user" style="color: #3b82f6;"></i> Delivery Details</h3>
+            <div style="line-height: 1.8; color: var(--admin-text-main); font-size: 0.95rem;">
+                <div><strong>Customer Name:</strong> {{ order.name }}</div>
+                <div><strong>Email:</strong> {{ order.email }}</div>
+                <div><strong>Phone Number:</strong> {{ order.phone }}</div>
+                <div style="margin-top: 0.75rem;">
+                    <strong>Delivery Address:</strong>
+                    <div style="background: rgba(255,255,255,0.03); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--admin-border); margin-top: 0.25rem;">
+                        {{ order.delivery_address|linebreaksbr }}
+                    </div>
+                </div>
+                {% if order.delivery_note %}
+                    <div style="margin-top: 0.75rem;">
+                        <strong>Delivery Instructions:</strong>
+                        <div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.75rem; border-radius: var(--radius-md); margin-top: 0.25rem;">
+                            {{ order.delivery_note }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock dashboard_content %}

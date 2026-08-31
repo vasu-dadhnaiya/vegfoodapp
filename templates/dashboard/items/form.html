@@ -1,0 +1,113 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-bar">
+    <div class="dashboard-title-group">
+        <h1>{{ title }}</h1>
+        <p>Configure product details, pricing, inventory stock, and item image.</p>
+    </div>
+    <a href="{% url 'dashboard_item_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;"><i class="fa fa-arrow-left"></i> Back to Items List</a>
+</div>
+
+<div class="admin-card" style="max-width: 800px; margin: 0 auto;">
+    <form method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                {% for err in form.non_field_errors %}
+                    <p style="margin: 0;">{{ err }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Name -->
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Food Item Name *</label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.name.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Category *</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                    <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.category.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Item Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+                <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.description.errors.0 }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Pricing & Stock Section -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--admin-border); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--admin-primary);"><i class="fa fa-tag"></i> Pricing & Inventory Management</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Regular Price (₹) *</label>
+                    {{ form.price }}
+                    {% if form.price.errors %}
+                        <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.price.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Discount Price (₹) (Optional)</label>
+                    {{ form.discount_price }}
+                    {% if form.discount_price.errors %}
+                        <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.discount_price.errors.0 }}</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Inventory Stock Qty *</label>
+                    {{ form.stock }}
+                    {% if form.stock.errors %}
+                        <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.stock.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Upload & Availability -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #ffffff;">Item Image (Max 5MB: JPG, PNG, WEBP)</label>
+                {{ form.image }}
+                {% if form.image.errors %}
+                    <span style="color: #f87171; font-size: 0.85rem; display: block; margin-top: 0.25rem;">{{ form.image.errors.0 }}</span>
+                {% endif %}
+                <div id="image-preview-container" style="margin-top: 1rem; {% if not food or not food.image %}display: none;{% endif %}">
+                    <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 0.5rem;">Image Preview:</p>
+                    <img id="image-preview" src="{% if food and food.image %}{{ food.image.url }}{% endif %}" alt="Preview" style="max-width: 150px; height: 120px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--admin-border);">
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center;">
+                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; color: #ffffff; font-weight: 600; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--admin-border); width: 100%;">
+                    {{ form.is_available }}
+                    <span>Mark as Available for Customers</span>
+                </label>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+            <a href="{% url 'dashboard_item_list' %}" class="btn-admin" style="background: rgba(255,255,255,0.1); color: #fff;">Cancel</a>
+            <button type="submit" class="btn-admin btn-admin-primary" style="padding: 0.75rem 2rem; font-size: 1rem;"><i class="fa fa-save"></i> {{ button_text }}</button>
+        </div>
+    </form>
+</div>
+{% endblock dashboard_content %}
